@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - spear_menu (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - spear_menu (from `.symlinks/plugins/spear_menu/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  spear_menu:
+    :path: ".symlinks/plugins/spear_menu/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  spear_menu: 378519aff185b0ac9d2f6aa28ada7a8d786bae45
+
+PODFILE CHECKSUM: c34e2287a9ccaa606aeceab922830efb9a6ff69a
+
+COCOAPODS: 1.9.1
