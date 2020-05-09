@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fanplaycore/widgets/components/horizontal_orline.dart';
 import 'package:fanplaycore/widgets/components/page_transition.dart';
 import 'package:fanplaycore/widgets/screens/home_screen.dart';
@@ -5,11 +7,16 @@ import 'package:fanplaycore/widgets/screens/sample_screen.dart';
 import 'package:fanplaycore/widgets/screens/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
 }
+
+String userName;
+String password;
 
 class _LoginState extends State<Login> {
   @override
@@ -37,7 +44,9 @@ class _LoginState extends State<Login> {
             Container(
               padding: EdgeInsets.all(20),
               child: TextField(
-                onChanged: (value) {},
+                onChanged: (value) {
+                  userName = value;
+                },
                 cursorColor: Colors.orange,
                 decoration: InputDecoration(
                   icon: Icon(FontAwesomeIcons.user),
@@ -48,7 +57,9 @@ class _LoginState extends State<Login> {
             Container(
               padding: EdgeInsets.all(20),
               child: TextField(
-                onChanged: (value) {},
+                onChanged: (value) {
+                  password = value;
+                },
                 obscureText: true,
                 cursorColor: Colors.orange,
                 decoration: InputDecoration(
@@ -100,8 +111,9 @@ class _LoginState extends State<Login> {
                 elevation: 5.0,
                 onPressed: () {
                   // Do something here
-                  Navigator.push(
-                      context, PageTransitions(widget: HomeScreen()));
+                  signIn(userName, password);
+//                  Navigator.push(
+//                      context, PageTransitions(widget: HomeScreen()));
                 },
                 splashColor: Colors.blueAccent,
               ),
@@ -171,5 +183,41 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+  void signIn(String userName, String password) async {
+    String baseUrl =
+        'http://45.112.139.194:8345/api/Signup/CheckSignup?signup.uEmailId=';
+    String newEmail = userName.replaceAll('@', '%40');
+    //print(newEmail);
+    String urlfiller = '&signup.uPassword=';
+    String urlBuild = baseUrl + newEmail + urlfiller + password;
+    Response response = await get(urlBuild);
+    var loginSuccess =
+        jsonDecode(response.body)['SignupAuthentication'][0]['SId'];
+    var loginInvalid = jsonDecode(response.body)['SignupAuthentication'];
+
+    try {
+      if (response.statusCode == 200) {
+        if (loginSuccess == 2) {
+          print('success');
+          clearCredentials();
+          Navigator.push(context, PageTransitions(widget: HomeScreen()));
+        } else {
+          print('Invalid Credentials');
+        }
+      }
+      //print(response.body);
+      else {
+        print(response.statusCode);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void clearCredentials() {
+    userName = '';
+    password = '';
   }
 }
