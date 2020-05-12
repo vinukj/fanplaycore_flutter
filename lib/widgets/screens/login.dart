@@ -6,6 +6,7 @@ import 'package:fanplaycore/widgets/screens/home_screen.dart';
 import 'package:fanplaycore/widgets/screens/sample_screen.dart';
 import 'package:fanplaycore/widgets/screens/sign_up.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -19,30 +20,39 @@ String userName;
 String password;
 
 class _LoginState extends State<Login> {
+  // final snackBar = SnackBar(content: Text('Yay! A SnackBar!'));
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
+        minimum: EdgeInsets.all(5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              margin: EdgeInsets.only(top: 20),
+              margin: EdgeInsets.only(top: height * .01),
               child: Image.asset('assets/images/FPH100C.png'),
             ),
-            Container(
-              child: Text(
-                'LOGIN',
-                style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w600,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.blue),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, PageTransitions(widget: HomeScreen()));
+              },
+              child: Container(
+                child: Text(
+                  'LOGIN',
+                  style: TextStyle(
+                      fontSize: height * .04,
+                      fontWeight: FontWeight.w600,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blue),
+                ),
               ),
             ),
             Container(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(height * .01),
               child: TextField(
                 onChanged: (value) {
                   userName = value;
@@ -55,7 +65,7 @@ class _LoginState extends State<Login> {
               ),
             ),
             Container(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(height * .01),
               child: TextField(
                 onChanged: (value) {
                   password = value;
@@ -82,7 +92,7 @@ class _LoginState extends State<Login> {
               ),
             ),
             SizedBox(
-              height: 20,
+              height: height * .04,
             ),
             InkWell(
               onTap: () {},
@@ -112,6 +122,7 @@ class _LoginState extends State<Login> {
                 onPressed: () {
                   // Do something here
                   signIn(userName, password);
+                  // Scaffold.of(context).showSnackBar(snackBar);
 //                  Navigator.push(
 //                      context, PageTransitions(widget: HomeScreen()));
                 },
@@ -121,9 +132,9 @@ class _LoginState extends State<Login> {
             SizedBox(
               height: 20,
             ),
-            HorizontalOrLine(height: 50, label: "OR"),
+            HorizontalOrLine(height: height * .05, label: "OR"),
             SizedBox(
-              height: 20,
+              height: height * .04,
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -155,7 +166,7 @@ class _LoginState extends State<Login> {
               ],
             ),
             SizedBox(
-              height: 50.0,
+              height: height * .1,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -194,17 +205,30 @@ class _LoginState extends State<Login> {
     String urlBuild = baseUrl + newEmail + urlfiller + password;
     Response response = await get(urlBuild);
     var loginSuccess =
-        jsonDecode(response.body)['SignupAuthentication'][0]['SId'];
+        jsonDecode(response.body)['emailAuthenticated'][0]['error'];
     var loginInvalid = jsonDecode(response.body)['SignupAuthentication'];
 
     try {
       if (response.statusCode == 200) {
-        if (loginSuccess == 2) {
+        if (loginSuccess == false) {
           print('success');
           clearCredentials();
+          // Fluttertoast.showToast(msg: 'hi');
+
           Navigator.push(context, PageTransitions(widget: HomeScreen()));
-        } else {
-          print('Invalid Credentials');
+        }
+        if (loginSuccess == true) {
+          print('invalid');
+          Fluttertoast.showToast(
+            msg: "Invalid Credentials. Pls check",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+          //Scaffold.of(context).showSnackBar(snackBar);
         }
       }
       //print(response.body);

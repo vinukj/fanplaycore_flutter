@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:fanplaycore/constants.dart';
 import 'package:fanplaycore/widgets/components/fab_bottom_app_bar.dart';
@@ -9,16 +11,42 @@ import 'package:fanplaycore/widgets/screens/profile_screen.dart';
 import 'package:fanplaycore/widgets/screens/sample_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gradient_app_bar/gradient_app_bar.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:gradient_app_bar/gradient_app_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+
+import '../components/location.dart';
 
 class HomeScreen extends StatefulWidget {
+  HomeScreen({Key key, this.title}) : super(key: key);
+
+  final String title;
+  final FlutterBlue flutterBlue = FlutterBlue.instance;
+  final List<BluetoothDevice> devicesList = new List<BluetoothDevice>();
+  final Map<Guid, List<int>> readValues = new Map<Guid, List<int>>();
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  final _writeController = TextEditingController();
+  BluetoothDevice _connectedDevice;
+  List<BluetoothService> _services;
+  double latitude;
+  double longitude;
+
+  _addDeviceTolist(final BluetoothDevice device) {
+    if (!widget.devicesList.contains(device)) {
+      setState(() {
+        widget.devicesList.add(device);
+      });
+    }
+  }
+
   int _currentIndex = 0;
   PageController _pageController;
 
@@ -38,6 +66,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void initState() {
+//    widget.flutterBlue.connectedDevices
+//        .asStream()
+//        .listen((List<BluetoothDevice> devices) {
+//      for (BluetoothDevice device in devices) {
+//        _addDeviceTolist(device);
+//      }
+//    });
+
+    widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
+      for (ScanResult result in results) {
+        _addDeviceTolist(result.device);
+      }
+    });
+    widget.flutterBlue.startScan();
     // TODO: implement initState
     super.initState();
     _pageController = PageController();
@@ -51,10 +93,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  String _currentAddress;
+  Future<void> getLocation() async {
+    Location location = Location();
+    await location.getCurrentPosition();
+    List<Placemark> placemark = await Geolocator()
+        .placemarkFromCoordinates(location.latitude, location.longitude);
+    Placemark place = placemark[0];
+    final String currentAddress =
+        "${place.name}, ${place.thoroughfare}, ${place.subLocality},${place.locality},${place.administrativeArea},${place.postalCode}";
+    //return currentAddress;
+    setState(() => _currentAddress = currentAddress);
+  }
+
+  double _distanceMoved;
+  Future<void> getMovement() async {
+    Location location = Location();
+    await location.getCurrentPosition();
+    await location.getLastPosition();
+    final double distanceMoved = await location.distanceCalculator(
+        location.latitude,
+        location.longitude,
+        location.lastLatitude,
+        location.lastLongitude);
+    if (distanceMoved > 0.00050) {
+      print('alert boundary crossed');
+      setState(() => _distanceMoved = distanceMoved);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    //print(getCurrentPosition());
+    //getLocation(latitude, longitude);
+    getLocation();
+    getMovement();
+    //print(_currentAddress);
+    //print(_distanceMoved);
 
     return new Scaffold(
       //key: _scaffoldKey,
@@ -124,13 +201,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: <Widget>[
             buildContainerSummaryScreen(height, width),
             Container(
-              color: Colors.red,
+              child: Column(
+                children: [
+                  Card(
+                    color: Colors.blue,
+                    child: Row(
+                      children: [
+                        Icon(
+                          FontAwesomeIcons.searchLocation,
+                          size: 50,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Card(
+                    color: Colors.white70,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(child: Text('$_currentAddress')),
+                      ],
+                    ),
+                  ),
+                  Card(
+                    color: Colors.black26,
+                    child: Row(
+                      children: [
+                        Text('$_distanceMoved'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             Container(
               color: Colors.green,
             ),
             Container(
-              color: Colors.blue,
+              child: _buildView(),
             ),
           ],
         ),
@@ -154,8 +262,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           activeColor: kActiveColor,
         ),
         BottomNavyBarItem(
-          title: Text('Shop'),
-          icon: Icon(FontAwesomeIcons.shoppingCart),
+          title: Text('GeoFence'),
+          icon: Icon(FontAwesomeIcons.mapMarkedAlt),
           inactiveColor: kInactiveColor,
           activeColor: kActiveColor,
         ),
@@ -166,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           activeColor: kActiveColor,
         ),
         BottomNavyBarItem(
-          title: Text('Item One'),
-          icon: Icon(Icons.settings),
+          title: Text('Pair'),
+          icon: Icon(FontAwesomeIcons.asterisk),
           inactiveColor: kInactiveColor,
           activeColor: kActiveColor,
         ),
@@ -184,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         children: [
           SizedBox(
-            height: 10,
+            height: 1,
           ),
           Row(
             children: [
@@ -193,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Center(
                   child: Icon(
                     FontAwesomeIcons.batteryHalf,
-                    size: 30,
+                    size: width * .05,
                     color: Color(0xFF284BA0),
                   ),
                 ),
@@ -204,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Text(
                     'TODAY',
                     style: TextStyle(
-                        fontSize: 30,
+                        fontSize: width * .06,
                         fontStyle: FontStyle.italic,
                         color: Color(0xFF284BA0),
                         fontWeight: FontWeight.w600),
@@ -216,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Center(
                   child: Icon(
                     FontAwesomeIcons.calendarAlt,
-                    size: 30,
+                    size: width * .05,
                     color: Color(0xFF284BA0),
                   ),
                 ),
@@ -227,14 +335,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: CircularPercentIndicator(
-                  radius: 120.0,
+                  radius: width * .25,
                   animation: true,
                   animationDuration: 5400,
-                  lineWidth: 10.0,
+                  lineWidth: width * .02,
                   percent: 0.7,
                   center: new Text(
                     '5.6 hrs SLEEP',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: width * .03),
                   ),
                   backgroundColor: Colors.black26,
                   progressColor: Color(0xFF284BA0),
@@ -243,15 +352,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               Expanded(
                 child: CircularPercentIndicator(
-                  radius: 120.0,
+                  radius: width * .25,
                   animation: true,
                   animationDuration: 5400,
-                  lineWidth: 10.0,
+                  lineWidth: width * .02,
                   percent: 0.5,
                   center: new Text(
                     '7689 STEPS',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: width * .03,
                     ),
                   ),
                   backgroundColor: Colors.black26,
@@ -262,30 +372,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
           SizedBox(
-            height: 10,
+            height: 3,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               RaisedButton(
+                padding: EdgeInsets.all(5),
                 elevation: 8.0,
                 onPressed: () {},
                 color: Colors.white,
                 child: Container(
                   color: Colors.white,
                   margin: EdgeInsets.all(0),
-                  padding: EdgeInsets.all(5),
-                  height: height * .09,
-                  width: width * .36,
+                  //padding: EdgeInsets.all(10),
+                  height: height * .07,
+                  width: width * .40,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset(
                         "assets/images/hb_03.gif",
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        //crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           buildTextCalendarDate('6 May >'),
                           buildTextTitle('60 BPM'),
@@ -296,23 +407,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               RaisedButton(
+                padding: EdgeInsets.all(5),
                 elevation: 8.0,
                 onPressed: () {},
                 color: Colors.white,
                 child: Container(
                   color: Colors.white,
                   margin: EdgeInsets.all(0),
-                  padding: EdgeInsets.all(5),
-                  height: height * .09,
-                  width: width * .4,
+                  padding: EdgeInsets.all(0),
+                  height: height * .07,
+                  width: width * .40,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset(
                         "assets/images/bp01.gif",
                       ),
                       Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           buildTextCalendarDate('6 May >'),
@@ -326,10 +438,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
           SizedBox(
-            height: 10,
+            height: 3,
           ),
           Container(
-            height: height * .10,
+            padding: EdgeInsets.all(3),
+            height: height * .15,
             width: width * .95,
             child: RaisedButton(
               color: Colors.white,
@@ -347,9 +460,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       buildTextCalendarDate('6 May >'),
                     ],
                   ),
-                  SizedBox(
-                    height: 5,
-                  ),
+//                    SizedBox(
+//                      height: 5,
+//                    ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -392,16 +505,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          SizedBox(
-            height: 10,
-          ),
+//          SizedBox(
+//            height: 10,
+//          ),
           Container(
-            height: height * .10,
+            padding: EdgeInsets.all(3),
+            height: height * .11,
             width: width * .95,
             child: RaisedButton(
               color: Colors.white,
               elevation: 8.0,
-              padding: EdgeInsets.all(5),
+              // padding: EdgeInsets.all(5),
               onPressed: () {
                 print('activity pressed');
               },
@@ -436,11 +550,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          SizedBox(
-            height: 10,
-          ),
+//            SizedBox(
+//              height: 10,
+//            ),
           Container(
-            height: height * .10,
+            padding: EdgeInsets.all(3),
+            height: height * .12,
             width: width * .95,
             child: RaisedButton(
               color: Colors.white,
@@ -480,11 +595,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          SizedBox(
-            height: 10,
-          ),
+//            SizedBox(
+//              height: 10,
+//            ),
           Container(
-            height: height * .10,
+            padding: EdgeInsets.all(3),
+            height: height * .12,
             width: width * .95,
             child: RaisedButton(
               color: Colors.white,
@@ -575,5 +691,217 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         color: kActiveColor,
       ),
     );
+  }
+
+  ListView _buildListViewOfDevices() {
+    List<Container> containers = new List<Container>();
+    for (BluetoothDevice device in widget.devicesList) {
+      containers.add(
+        Container(
+          height: 50,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Text(device.name == '' ? '(unknown device)' : device.name),
+                    Text(device.id.toString()),
+                  ],
+                ),
+              ),
+              FlatButton(
+                color: Colors.blue,
+                child: Text(
+                  'Connect',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () async {
+                  widget.flutterBlue.stopScan();
+                  try {
+                    await device.connect();
+                  } catch (e) {
+                    if (e.code != 'already_connected') {
+                      throw e;
+                    }
+                  } finally {
+                    _services = await device.discoverServices();
+                  }
+                  setState(() {
+                    _connectedDevice = device;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(8),
+      children: <Widget>[
+        ...containers,
+      ],
+    );
+  }
+
+  List<ButtonTheme> _buildReadWriteNotifyButton(
+      BluetoothCharacteristic characteristic) {
+    List<ButtonTheme> buttons = new List<ButtonTheme>();
+
+    if (characteristic.properties.read) {
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: RaisedButton(
+              color: Colors.blue,
+              child: Text('READ', style: TextStyle(color: Colors.white)),
+              onPressed: () async {
+                var sub = characteristic.value.listen((value) {
+                  setState(() {
+                    widget.readValues[characteristic.uuid] = value;
+                  });
+                });
+                await characteristic.read();
+                sub.cancel();
+              },
+            ),
+          ),
+        ),
+      );
+    }
+    if (characteristic.properties.write) {
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: RaisedButton(
+              child: Text('WRITE', style: TextStyle(color: Colors.white)),
+              onPressed: () async {
+                await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Write"),
+                        content: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: TextField(
+                                controller: _writeController,
+                              ),
+                            ),
+                          ],
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text("Send"),
+                            onPressed: () {
+                              characteristic.write(
+                                  utf8.encode(_writeController.value.text));
+                              Navigator.pop(context);
+                            },
+                          ),
+                          FlatButton(
+                            child: Text("Cancel"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      );
+                    });
+              },
+            ),
+          ),
+        ),
+      );
+    }
+    if (characteristic.properties.notify) {
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: RaisedButton(
+              child: Text('NOTIFY', style: TextStyle(color: Colors.white)),
+              onPressed: () async {
+                characteristic.value.listen((value) {
+                  widget.readValues[characteristic.uuid] = value;
+                  print(value);
+                });
+                await characteristic.setNotifyValue(true);
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    return buttons;
+  }
+
+  ListView _buildConnectDeviceView() {
+    List<Container> containers = new List<Container>();
+
+    for (BluetoothService service in _services) {
+      List<Widget> characteristicsWidget = new List<Widget>();
+
+      for (BluetoothCharacteristic characteristic in service.characteristics) {
+        characteristicsWidget.add(
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Text(characteristic.uuid.toString(),
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    ..._buildReadWriteNotifyButton(characteristic),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Text('Value: ' +
+                        widget.readValues[characteristic.uuid].toString()),
+                  ],
+                ),
+                Divider(),
+              ],
+            ),
+          ),
+        );
+      }
+      containers.add(
+        Container(
+          child: ExpansionTile(
+              title: Text(service.uuid.toString()),
+              children: characteristicsWidget),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(8),
+      children: <Widget>[
+        ...containers,
+      ],
+    );
+  }
+
+  ListView _buildView() {
+    if (_connectedDevice != null) {
+      return _buildConnectDeviceView();
+    }
+    return _buildListViewOfDevices();
   }
 }

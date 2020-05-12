@@ -1,4 +1,6 @@
 import 'package:fanplaycore/widgets/components/gradient_appbar.dart';
+import 'package:fanplaycore/widgets/components/page_transition.dart';
+import 'package:fanplaycore/widgets/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gradient_app_bar/gradient_app_bar.dart';
@@ -44,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               'PROFILE',
               style: TextStyle(
-                  fontSize: 30,
+                  fontSize: width * .08,
                   fontStyle: FontStyle.italic,
                   color: Color(0xFF284BA0),
                   fontWeight: FontWeight.w600),
@@ -65,15 +67,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Center(
                 child: CircleAvatar(
-                  radius: 90,
+                  radius: width * .2,
                   child: CircleAvatar(
-                    radius: 85,
+                    radius: width * .19,
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                     child: Icon(
                       FontAwesomeIcons.camera,
                       color: kActiveColor,
-                      size: 40,
+                      size: width * .1,
                     ),
                   ),
                 ),
@@ -98,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               SizedBox(
-                width: 20,
+                width: width * .2,
               ),
               Container(
                 child: DropdownButton<String>(
@@ -232,7 +234,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             width: width * .70,
             child: RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, PageTransitions(widget: HomeScreen()));
+              },
               elevation: 8,
               color: kActiveColor,
               splashColor: kActiveColor,

@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:fanplaycore/constants.dart';
 import 'package:fanplaycore/widgets/components/page_transition.dart';
 import 'package:fanplaycore/widgets/screens/splash_screens.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:shimmer/shimmer.dart';
 
 void main() {
   runApp(MyApp());
@@ -79,7 +81,18 @@ class _MyHomePageState extends State<MyHomePage>
           child: ScaleTransition(
             scale: animation,
             child: Row(
-              children: [Image.asset('assets/images/FPH100C.png')],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.white10,
+                  highlightColor: kActiveColor,
+                  child: Image.asset(
+                    'assets/images/FPV120C.png',
+                    fit: BoxFit.fill,
+                    scale: 0.8,
+                  ),
+                )
+              ],
             ),
           ),
         ),

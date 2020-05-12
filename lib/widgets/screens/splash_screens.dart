@@ -3,6 +3,7 @@ import 'package:fanplaycore/widgets/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:fanplaycore/constants.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Widget _buildImage(String assetName) {
     return Align(
-      child: Image.asset('assets/images/$assetName.png', width: 350.0),
+      child: Image.asset('assets/images/$assetName.png', width: 250.0),
       alignment: Alignment.bottomCenter,
     );
   }
@@ -39,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
           title: "Connect your SmartBands",
           body:
               "If you dont yet have a FanPlay Band, no worries, you can connect your existing smart band to google fit for Android or Apple fit for ios",
-          image: _buildImage('playstore'),
+          image: _buildImage('app1'),
           decoration: kPageDecoration,
         ),
         PageViewModel(
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
           decoration: kPageDecoration,
         ),
         PageViewModel(
-          title: "Title of last page",
+          title: "Lets Get Started",
           bodyWidget: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [],

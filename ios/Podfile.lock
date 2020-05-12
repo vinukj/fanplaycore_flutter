@@ -1,20 +1,48 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_blue (0.0.1):
+    - Flutter
+    - flutter_blue/Protos (= 0.0.1)
+  - flutter_blue/Protos (0.0.1):
+    - Flutter
+    - Protobuf (~> 3.11.4)
+  - flutter_flexible_toast (0.0.1):
+    - Flutter
+  - fluttertoast (0.0.2):
+    - Flutter
+  - Protobuf (3.11.4)
   - spear_menu (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_blue (from `.symlinks/plugins/flutter_blue/ios`)
+  - flutter_flexible_toast (from `.symlinks/plugins/flutter_flexible_toast/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - spear_menu (from `.symlinks/plugins/spear_menu/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Protobuf
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_blue:
+    :path: ".symlinks/plugins/flutter_blue/ios"
+  flutter_flexible_toast:
+    :path: ".symlinks/plugins/flutter_flexible_toast/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   spear_menu:
     :path: ".symlinks/plugins/spear_menu/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_blue: eeb381dc4727a0954dede73515f683865494b370
+  flutter_flexible_toast: 0547e740cae0c33bb7c51bcd931233f4584e1143
+  fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
+  Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   spear_menu: 378519aff185b0ac9d2f6aa28ada7a8d786bae45
 
 PODFILE CHECKSUM: c34e2287a9ccaa606aeceab922830efb9a6ff69a
