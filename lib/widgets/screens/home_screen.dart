@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:fanplaycore/constants.dart';
@@ -18,6 +20,9 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:gradient_app_bar/gradient_app_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:share/share.dart';
 
 import '../components/location.dart';
 
@@ -28,16 +33,22 @@ class HomeScreen extends StatefulWidget {
   final FlutterBlue flutterBlue = FlutterBlue.instance;
   final List<BluetoothDevice> devicesList = new List<BluetoothDevice>();
   final Map<Guid, List<int>> readValues = new Map<Guid, List<int>>();
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  Location location = new Location();
+  Completer<GoogleMapController> _controller = Completer();
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final _writeController = TextEditingController();
   BluetoothDevice _connectedDevice;
   List<BluetoothService> _services;
-  double latitude;
-  double longitude;
+  double homeLatitude = 0.0;
+  double homeLongitude = 0.0;
+  double newLatitude;
+  double newLongitude;
 
   _addDeviceTolist(final BluetoothDevice device) {
     if (!widget.devicesList.contains(device)) {
@@ -73,7 +84,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 //        _addDeviceTolist(device);
 //      }
 //    });
-
+//    location.getCurrentPosition();
+    getMyPosition();
     widget.flutterBlue.scanResults.listen((List<ScanResult> results) {
       for (ScanResult result in results) {
         _addDeviceTolist(result.device);
@@ -93,32 +105,149 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+//  double _latitude;
+//  double _longitude;
+//  String _currentAddress;
+//  Future<void> getLocation() async {
+//    Location location = Location();
+//    await location.getCurrentPosition();
+//
+//    List<Placemark> placemark = await Geolocator()
+//        .placemarkFromCoordinates(location.latitude, location.longitude);
+//    Placemark place = placemark[0];
+//    final String currentAddress =
+//        "${place.name}, ${place.thoroughfare}, ${place.subLocality},${place.locality},${place.administrativeArea},${place.postalCode}";
+//    //return currentAddress;
+//    setState(() {
+//      _currentAddress = currentAddress;
+//      _latitude = location.latitude;
+//      _longitude = location.longitude;
+//    });
+//  }
+
+//  void getLatLong() async {
+//    final SharedPreferences prefs = await _prefs;
+//    double latitude = prefs.getDouble('latitude');
+//    double longitude = prefs.getDouble('longitude');
+//
+//    //print(latitude);
+//    //print(longitude);
+//  }
+//  double homeLatitude;
+//  getLatOnly() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    //Return double
+//    homeLatitude = prefs.getDouble('homelatitude');
+//    return homeLatitude;
+//  }
+
+//  Future getLongOnly() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    //Return double
+//    double longitude = prefs.getDouble('longitude');
+//    return longitude;
+//  }
+
+  //double _distanceMoved;
+//  Future<void> getMovement() async {
+//
+//    final double distanceMoved = await location.distanceCalculator(
+//        prefs.getDouble('latitude'),
+//        prefs.getDouble('longitude'),
+//        location.lastLatitude,
+//        location.lastLongitude);
+//    if (distanceMoved > 0.01) {
+//      print('alert boundary crossed');
+//      setState(() {
+//        _distanceMoved = distanceMoved;
+//        _safeColor = Colors.red;
+//      });
+//    }
+//    if (distanceMoved < 0.01) {
+//      setState(() {
+//        _distanceMoved = distanceMoved;
+//        _safeColor = Colors.green;
+//      });
+//    }
+//    if (distanceMoved.isNaN) {
+//      setState(() {
+//        _distanceMoved = 0.0;
+//        _safeColor = Colors.green;
+//      });
+//    }
+//  }
+
+  void getMyPosition() async {
+    try {
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      homeLatitude = position.latitude;
+      homeLongitude = position.longitude;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void getMyNewPosition() async {
+    try {
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      newLatitude = position.latitude;
+      newLongitude = position.longitude;
+    } catch (e) {
+      print(e);
+    }
+  }
+
   String _currentAddress;
-  Future<void> getLocation() async {
-    Location location = Location();
-    await location.getCurrentPosition();
+  getMyAddress() async {
     List<Placemark> placemark = await Geolocator()
-        .placemarkFromCoordinates(location.latitude, location.longitude);
+        .placemarkFromCoordinates(homeLatitude, homeLongitude);
     Placemark place = placemark[0];
     final String currentAddress =
         "${place.name}, ${place.thoroughfare}, ${place.subLocality},${place.locality},${place.administrativeArea},${place.postalCode}";
     //return currentAddress;
-    setState(() => _currentAddress = currentAddress);
+    setState(() {
+      _currentAddress = currentAddress;
+    });
   }
 
+  Color _safeColor;
   double _distanceMoved;
-  Future<void> getMovement() async {
-    Location location = Location();
-    await location.getCurrentPosition();
-    await location.getLastPosition();
-    final double distanceMoved = await location.distanceCalculator(
-        location.latitude,
-        location.longitude,
-        location.lastLatitude,
-        location.lastLongitude);
-    if (distanceMoved > 0.00050) {
+  void getMovement() {
+    double divider = 57.29577951;
+    double milesToKilo = 1.609344;
+    double formulaConst = 3963.0;
+    double valLat1 = homeLatitude / divider;
+    double vallon1 = homeLongitude / divider;
+    double vallat2 = newLatitude / divider;
+    double vallon2 = newLongitude / divider;
+    double val1 = sin(valLat1);
+    double val2 = sin(vallat2);
+    double val3 = cos(valLat1);
+    double val4 = cos(vallat2);
+    double val5 = cos(vallon2 - vallon1);
+    double moveDistance = formulaConst * acos(val1 * val2 + val3 * val4 * val5);
+    // print(distanceMoved);
+    print(moveDistance);
+    if (moveDistance > 0.01) {
       print('alert boundary crossed');
-      setState(() => _distanceMoved = distanceMoved);
+      setState(() {
+        _distanceMoved = moveDistance;
+        _safeColor = Colors.red;
+      });
+    }
+    if (moveDistance < 0.01) {
+      setState(() {
+        _distanceMoved = moveDistance;
+        _safeColor = Colors.green;
+      });
+    }
+    if (moveDistance.isNaN) {
+      setState(() {
+        _distanceMoved = 0.0;
+        _safeColor = Colors.green;
+      });
     }
   }
 
@@ -126,12 +255,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    //print(getCurrentPosition());
+
+    final CameraPosition _kMyLocation = CameraPosition(
+      target: LatLng(homeLatitude, homeLongitude),
+      zoom: 16,
+    );
+
+    final CameraPosition _kLake = CameraPosition(
+      bearing: 192,
+      target: LatLng(homeLatitude, homeLongitude),
+      tilt: 60,
+      zoom: 20,
+    );
+
+//    double distanceMoved = location.distanceCalculator(
+//        homeLatitude, homeLongitude, newLatitude, newLongitude);
+//    print(distanceMoved);
+
     //getLocation(latitude, longitude);
-    getLocation();
-    getMovement();
+//    getLatLong();
+//    getMovement();
     //print(_currentAddress);
-    //print(_distanceMoved);
+
+    //print(latitude);
+//    print(_longitude);
+    //latitude = await getLatOnly();
+//    print(getLongOnly());
+    // print(latitude);
+
+    //print(currentlatitude);
+    //print(longitude);
+    //getLatOnly();
+    // print(homeLatitude);
+    getMyNewPosition();
+    // getMovement();
+
+    print(homeLatitude);
+    print(homeLongitude);
+    print(newLatitude);
+    print(newLongitude);
 
     return new Scaffold(
       //key: _scaffoldKey,
@@ -182,7 +344,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           IconButton(
             icon: Icon(FontAwesomeIcons.shareAlt),
-            onPressed: () {},
+            onPressed: () {
+              Share.share('This is awesome share');
+            },
           ),
           IconButton(
             icon: Icon(FontAwesomeIcons.userAlt),
@@ -204,31 +368,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Column(
                 children: [
                   Card(
-                    color: Colors.blue,
+                    elevation: 10,
+                    color: Colors.white,
                     child: Row(
                       children: [
-                        Icon(
-                          FontAwesomeIcons.searchLocation,
-                          size: 50,
+                        Expanded(
+                          flex: 1,
+                          child: GestureDetector(
+                            onTap: () {
+                              getMyAddress();
+                            },
+                            child: Icon(
+                              FontAwesomeIcons.houseUser,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                        Expanded(flex: 3, child: Text('$_currentAddress')),
+                        Expanded(
+                          flex: 1,
+                          child: FlatButton(
+                            child: Icon(
+                              FontAwesomeIcons.save,
+                              size: 40,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Card(
-                    color: Colors.white70,
+                    elevation: 10,
+                    color: Colors.white,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(child: Text('$_currentAddress')),
+                        Expanded(
+                          flex: 1,
+                          child: FlatButton(
+                            onPressed: () {
+                              getMovement();
+                            },
+                            child: Icon(
+                              FontAwesomeIcons.route,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                        Expanded(flex: 4, child: Text('$_distanceMoved')),
+                        Expanded(
+                          flex: 1,
+                          child: buildCircleAvatar(_safeColor),
+                        ),
                       ],
                     ),
                   ),
-                  Card(
-                    color: Colors.black26,
-                    child: Row(
-                      children: [
-                        Text('$_distanceMoved'),
-                      ],
+                  Container(
+                    width: width * .90,
+                    height: height * .60,
+                    child: GoogleMap(
+                      mapType: MapType.normal,
+                      initialCameraPosition: _kMyLocation,
+                      onMapCreated: (GoogleMapController controller) {
+                        _controller.complete(controller);
+                      },
                     ),
                   ),
                 ],
@@ -247,6 +450,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  CircleAvatar buildCircleAvatar(_safeColor) {
+    return CircleAvatar(
+      backgroundColor: _safeColor,
+    );
+  }
+
   BottomNavyBar buildBottomNavyBar() {
     return BottomNavyBar(
       selectedIndex: _currentIndex,
@@ -257,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       items: <BottomNavyBarItem>[
         BottomNavyBarItem(
           title: Text('Summary'),
-          icon: Icon(Icons.home),
+          icon: Icon(FontAwesomeIcons.home),
           inactiveColor: kInactiveColor,
           activeColor: kActiveColor,
         ),

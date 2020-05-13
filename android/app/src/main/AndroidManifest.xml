@@ -13,6 +13,9 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="fanplaycore"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAhVO5yF1FEabGEkV4Q1tjTmtq8QJv8di4"/>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

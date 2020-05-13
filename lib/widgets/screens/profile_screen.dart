@@ -35,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: GradientAppBar(
         gradient: LinearGradient(colors: [kActiveColor, kInactiveColor]),
         title: Image.asset('assets/images/FPH100W.png', fit: BoxFit.cover),
@@ -46,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               'PROFILE',
               style: TextStyle(
-                  fontSize: width * .08,
+                  fontSize: width * .07,
                   fontStyle: FontStyle.italic,
                   color: Color(0xFF284BA0),
                   fontWeight: FontWeight.w600),
@@ -67,9 +68,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Center(
                 child: CircleAvatar(
-                  radius: width * .2,
+                  radius: width * .15,
                   child: CircleAvatar(
-                    radius: width * .19,
+                    radius: width * .14,
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                     child: Icon(
@@ -82,9 +83,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          buildTextfields(width, 'Name'),
-          buildTextfields(width, 'Email'),
-          buildTextfields(width, 'Phone'),
+          buildTextfields(width, height, 'Name'),
+          buildTextfields(width, height, 'Email'),
+          buildTextfields(width, height, 'Phone'),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -156,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(
-              height: 20.0,
+              height: height * .05,
             ),
           ]),
           Row(
@@ -254,8 +255,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Container buildTextfields(double width, String labelText) {
+  Container buildTextfields(double width, double height, String labelText) {
     return Container(
+      height: height * .08,
       width: width * .90,
       alignment: Alignment.centerLeft,
       child: TextField(

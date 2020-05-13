@@ -43,10 +43,14 @@ dependencies:
   math_expressions: ^2.0.0
   google_maps_flutter: ^0.5.27+1
   shimmer: ^1.1.1
+  shared_preferences: ^0.5.7+2
+  share: ^0.6.4+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  google_maps_flutter:
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -2,41 +2,50 @@ import 'dart:math';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Location {
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   double latitude;
   double longitude;
-  double lastLongitude;
-  double lastLatitude;
+  double newLongitude;
+  double newLatitude;
   double lat1Radian;
   double lat2Radian;
   double lon1Radian;
   double lon2Radian;
 
-  Future<void> getCurrentPosition() async {
+  void getCurrentPosition() async {
     try {
       Position position = await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       latitude = position.latitude;
       longitude = position.longitude;
+//      final SharedPreferences prefs = await _prefs;
+//      prefs.setDouble('homelatitude', latitude);
+//      prefs.setDouble('homelongitude', longitude);
     } catch (e) {
       print(e);
     }
   }
 
-  Future<void> getLastPosition() async {
+  Future<void> getNewPosition() async {
     try {
       Position position = await Geolocator()
-          .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-      lastLatitude = position.latitude;
-      lastLongitude = position.longitude;
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      newLatitude = position.latitude;
+      newLongitude = position.longitude;
+      final SharedPreferences prefs = await _prefs;
+      prefs.setDouble('newLatitude', newLatitude);
+      prefs.setDouble('newLongitude', newLongitude);
     } catch (e) {
       print(e);
     }
   }
 
-  Future<double> distanceCalculator(
-      lat1Radian, lon1Radian, lat2Radian, lon2Radian) async {
+  void saveLatLong() async {}
+
+  double distanceCalculator(lat1Radian, lon1Radian, lat2Radian, lon2Radian) {
     double divider = 57.29577951;
     double milesToKilo = 1.609344;
     double formulaConst = 3963.0;
