@@ -8,9 +8,11 @@ import 'package:fanplaycore/widgets/components/fab_bottom_app_bar.dart';
 import 'package:fanplaycore/widgets/components/fab_with_icons.dart';
 import 'package:fanplaycore/widgets/components/layout.dart';
 import 'package:fanplaycore/widgets/components/page_transition.dart';
+import 'package:fanplaycore/widgets/components/screen_size_reducers.dart';
 import 'package:fanplaycore/widgets/screens/login.dart';
 import 'package:fanplaycore/widgets/screens/profile_screen.dart';
 import 'package:fanplaycore/widgets/screens/sample_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -438,7 +440,252 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             Container(
-              color: Colors.green,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      'LEADERBOARD',
+                      style: TextStyle(
+                          fontSize: width * .07,
+                          fontStyle: FontStyle.italic,
+                          color: Color(0xFF284BA0),
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Stack(
+                    //alignment: AlignmentDirectional.center,
+                    children: [
+                      Container(
+                        width: width,
+                        height: height * .20,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/bgprofile.png'),
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Container(
+                          child: CircleAvatar(
+                            radius: screenWidth(context, dividedBy: 6),
+                            child: CircleAvatar(
+                              radius: screenWidth(context, dividedBy: 6.5),
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional(.4, .2),
+                        child: Container(
+                          width: 50.0,
+                          height: 50.0,
+                          decoration: BoxDecoration(
+                              color: Colors.red, shape: BoxShape.circle),
+                          alignment: Alignment.center,
+                          child: new Text(
+                            '4',
+                            style: new TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'RAMESH',
+                        style: TextStyle(
+                          color: kActiveColor,
+                          fontSize: screenHeight(context, dividedBy: 30),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '2,345 Points',
+                        style: TextStyle(
+                          color: kInactiveColor,
+                          fontSize: screenHeight(context, dividedBy: 40),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          Card(
+                            margin: EdgeInsets.all(8),
+                            elevation: 10,
+                            color: Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius:
+                                          screenWidth(context, dividedBy: 7),
+                                      child: CircleAvatar(
+                                        radius: screenWidth(context,
+                                            dividedBy: 7.5),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.black,
+                                        child: Image.asset(
+                                          'assets/images/ico_running_nocircle.png',
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  '10kms',
+                                  style: TextStyle(
+                                    fontSize:
+                                        screenHeight(context, dividedBy: 35),
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  'Running',
+                                  style: TextStyle(
+                                      fontSize:
+                                          screenHeight(context, dividedBy: 35)),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            margin: EdgeInsets.all(8),
+                            elevation: 10,
+                            color: Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius:
+                                          screenWidth(context, dividedBy: 7),
+                                      child: CircleAvatar(
+                                        radius: screenWidth(context,
+                                            dividedBy: 7.5),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.black,
+                                        child: Image.asset(
+                                          'assets/images/ico_situps_nocircle.png',
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  '250',
+                                  style: TextStyle(
+                                    fontSize:
+                                        screenHeight(context, dividedBy: 35),
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  'Situps',
+                                  style: TextStyle(
+                                      fontSize:
+                                          screenHeight(context, dividedBy: 35)),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            margin: EdgeInsets.all(8),
+                            elevation: 10,
+                            color: Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius:
+                                          screenWidth(context, dividedBy: 7),
+                                      child: CircleAvatar(
+                                        radius: screenWidth(context,
+                                            dividedBy: 7.5),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.black,
+                                        child: Image.asset(
+                                          'assets/images/ico_treadmill_nocircle.png',
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  '5 Kms',
+                                  style: TextStyle(
+                                    fontSize:
+                                        screenHeight(context, dividedBy: 35),
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                                Text(
+                                  'Treadmill',
+                                  style: TextStyle(
+                                      fontSize:
+                                          screenHeight(context, dividedBy: 35)),
+                                ),
+                                SizedBox(
+                                  height: screenHeight(context, dividedBy: 80),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             Container(
               child: _buildView(),
